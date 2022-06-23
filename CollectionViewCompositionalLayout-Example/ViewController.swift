@@ -25,7 +25,8 @@ struct Text: Hashable {
 class ViewController: UIViewController {
   
   enum Section: CaseIterable {
-    case a
+    case selected
+    case deselected
   }
   
   lazy var dataSource: UICollectionViewDiffableDataSource<Section, Text>! = nil
@@ -49,13 +50,28 @@ class ViewController: UIViewController {
     Text(text: "3"),
     Text(text: "4"),
     Text(text: "5"),
+    Text(text: "6")
+  ]
+  var items1 = [
+    Text(text: "1"),
+    Text(text: "2"),
+    Text(text: "7"),
+    Text(text: "1"),
+    Text(text: "2"),
+    Text(text: "3"),
+    Text(text: "4"),
+    Text(text: "5"),
     Text(text: "6"),
-    Text(text: "7")
+    Text(text: "7"),
+    Text(text: "1"),
+    Text(text: "2"),
+    Text(text: "3"),
+    Text(text: "4"),
+    Text(text: "5"),
+    Text(text: "6")
   ]
   
   lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: self.createLayout())
-  
-//  lazy var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -74,12 +90,14 @@ class ViewController: UIViewController {
       guard let cell = collectionView.dequeueReusableCell(
         withReuseIdentifier: "cell",
         for: indexPath) as? Cell else { fatalError("Could not create new cell") }
-      cell.titleLabel.text = "1231231232112312312312312312312312312312"
+      cell.titleLabel.text = "\(indexPath.section) \(indexPath.row)"
       return cell
     }
     var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
-    snapshot.appendSections([Section.a])
+    snapshot.appendSections([Section.selected])
     snapshot.appendItems(items)
+    snapshot.appendSections([Section.deselected])
+    snapshot.appendItems(items1)
     dataSource.apply(snapshot, animatingDifferences: true)
   }
   
@@ -118,11 +136,16 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    print("DEBUG: didSelectedIndex is \(indexPath.row)")
-    self.items.remove(at: indexPath.row)
+    print("DEBUG: didSelectedIndex is \(indexPath.section) \(indexPath.row)")
+    if indexPath.section == 0 {
+      items.remove(at: indexPath.row)
+    } else {
+      items1.remove(at: indexPath.row)
+    }
     var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
-    snapshot.appendSections([Section.a])
-    snapshot.appendItems(items)
+    snapshot.appendSections([Section.selected, Section.deselected])
+    snapshot.appendItems(items, toSection: .selected)
+    snapshot.appendItems(items1, toSection: .deselected)
     dataSource.apply(snapshot, animatingDifferences: true)
   }
   
