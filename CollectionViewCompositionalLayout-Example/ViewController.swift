@@ -24,9 +24,11 @@ struct Text: Hashable {
 
 class ViewController: UIViewController {
   
-  enum Section: CaseIterable {
-    case selected
-    case deselected
+  static let sectionHeaderElementKind = "section-header-element-kind"
+  
+  enum Section: String, CaseIterable {
+    case selected = "selected"
+    case deselected = "deselected"
   }
   
   lazy var dataSource: UICollectionViewDiffableDataSource<Section, Text>! = nil
@@ -78,6 +80,11 @@ class ViewController: UIViewController {
     // Do any additional setup after loading the view.
     
     collectionView.delegate = self
+    collectionView.register(
+      HeaderView.self,
+      forSupplementaryViewOfKind: ViewController.sectionHeaderElementKind,
+      withReuseIdentifier: HeaderView.reuseIdentifier
+    )
     collectionView.register(Cell.self, forCellWithReuseIdentifier: "cell")
     setupLayout()
     configureDataSource()
@@ -93,6 +100,21 @@ class ViewController: UIViewController {
       cell.titleLabel.text = "\(indexPath.section) \(indexPath.row)"
       return cell
     }
+    
+    dataSource.supplementaryViewProvider = { (
+      collectionView: UICollectionView,
+      kind: String,
+      indexPath: IndexPath) -> UICollectionReusableView? in
+
+      guard let supplementaryView = collectionView.dequeueReusableSupplementaryView(
+        ofKind: kind,
+        withReuseIdentifier: HeaderView.reuseIdentifier,
+        for: indexPath) as? HeaderView else { fatalError("Cannot create header view") }
+
+      supplementaryView.label.text = Section.allCases[indexPath.section].rawValue
+      return supplementaryView
+    }
+    
     var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
     snapshot.appendSections([Section.selected])
     snapshot.appendItems(items)
@@ -105,7 +127,7 @@ class ViewController: UIViewController {
     let layout = UICollectionViewCompositionalLayout { (sectionIndex: Int,
                                                         layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection in
       let contentSize = layoutEnvironment.container.effectiveContentSize
-      let columns = contentSize.width > 800 ? 3 : 2
+      let columns = 2
       let spacing = CGFloat(10)
       let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                             heightDimension: .estimated(100))
@@ -119,6 +141,19 @@ class ViewController: UIViewController {
       section.interGroupSpacing = spacing
       section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
       
+      let headerSize = NSCollectionLayoutSize(
+        widthDimension: .fractionalWidth(1.0),
+        heightDimension: .estimated(44)
+      )
+      let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
+        layoutSize: headerSize,
+        elementKind: ViewController.sectionHeaderElementKind,
+        alignment: .top
+      )
+      
+      section.boundarySupplementaryItems = [sectionHeader]
+      section.orthogonalScrollingBehavior = .groupPaging
+
       return section
     }
     return layout
