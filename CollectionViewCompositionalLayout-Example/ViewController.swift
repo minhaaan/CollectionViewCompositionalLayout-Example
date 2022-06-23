@@ -29,7 +29,21 @@ class ViewController: UIViewController {
   }
   
   lazy var dataSource: UICollectionViewDiffableDataSource<Section, Text>! = nil
-  let items = [
+  var items = [
+    Text(text: "1"),
+    Text(text: "2"),
+    Text(text: "3"),
+    Text(text: "4"),
+    Text(text: "5"),
+    Text(text: "6"),
+    Text(text: "7"),
+    Text(text: "1"),
+    Text(text: "2"),
+    Text(text: "3"),
+    Text(text: "4"),
+    Text(text: "5"),
+    Text(text: "6"),
+    Text(text: "7"),
     Text(text: "1"),
     Text(text: "2"),
     Text(text: "3"),
@@ -41,10 +55,13 @@ class ViewController: UIViewController {
   
   lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: self.createLayout())
   
+//  lazy var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view.
     
+    collectionView.delegate = self
     collectionView.register(Cell.self, forCellWithReuseIdentifier: "cell")
     setupLayout()
     configureDataSource()
@@ -63,7 +80,7 @@ class ViewController: UIViewController {
     var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
     snapshot.appendSections([Section.a])
     snapshot.appendItems(items)
-    dataSource.apply(snapshot)
+    dataSource.apply(snapshot, animatingDifferences: true)
   }
   
   func createLayout() -> UICollectionViewLayout {
@@ -99,3 +116,14 @@ class ViewController: UIViewController {
   
 }
 
+extension ViewController: UICollectionViewDelegate {
+  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    print("DEBUG: didSelectedIndex is \(indexPath.row)")
+    self.items.remove(at: indexPath.row)
+    var snapshot = NSDiffableDataSourceSnapshot<Section, Text>()
+    snapshot.appendSections([Section.a])
+    snapshot.appendItems(items)
+    dataSource.apply(snapshot, animatingDifferences: true)
+  }
+  
+}

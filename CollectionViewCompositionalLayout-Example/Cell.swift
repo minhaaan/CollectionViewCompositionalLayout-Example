@@ -13,7 +13,7 @@ final class Cell: UICollectionViewCell {
   // MARK: Properties
   
   let titleLabel = UILabel().then {
-    $0.textColor = .white
+    $0.textColor = .black
     $0.font = .boldSystemFont(ofSize: 20)
     $0.numberOfLines = 0
   }
@@ -23,7 +23,8 @@ final class Cell: UICollectionViewCell {
   override init(frame: CGRect) {
     super.init(frame: .zero)
     setupLayout()
-    self.backgroundColor = .purple
+    self.backgroundColor = .lightGray
+    self.layer.cornerRadius = 5
   }
   
   required init?(coder: NSCoder) {
